@@ -3,15 +3,11 @@ package dev.isira.xmlviz.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-/**
- * Metadata about an attribute observed on instances of an element type.
- * Tracks occurrence count, sample values, and infers the data type.
- */
 public class AttributeInfo {
     private final String name;
     private int occurrenceCount;
     private final Set<String> sampleValues = new LinkedHashSet<>();
-    private String inferredType; // null until first value seen
+    private String inferredType;
 
     public AttributeInfo(String name) {
         this.name = name;
@@ -43,14 +39,12 @@ public class AttributeInfo {
 
     private void inferType(String value) {
         if (value == null || value.isEmpty()) return;
-        // Once we've fallen back to string, stay there
         if ("string".equals(inferredType)) return;
 
-        String detected = detectType(value);
+        final var detected = detectType(value);
         if (inferredType == null) {
             inferredType = detected;
         } else if (!inferredType.equals(detected)) {
-            // Widen: integer -> decimal is OK, everything else -> string
             if (inferredType.equals("integer") && detected.equals("decimal")) {
                 inferredType = "decimal";
             } else {

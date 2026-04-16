@@ -2,10 +2,6 @@ package dev.isira.xmlviz.model;
 
 import java.util.*;
 
-/**
- * Represents the inferred schema for a single element type (tag name).
- * Accumulates attribute info, child relationships, and cardinality during parsing.
- */
 public class SchemaNode {
     private final String tagName;
     private final Map<String, AttributeInfo> attributes = new LinkedHashMap<>();

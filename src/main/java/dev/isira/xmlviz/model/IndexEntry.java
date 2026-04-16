@@ -4,15 +4,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * A lightweight index entry for one XML element instance.
- * Used by the instance tree view for lazy loading.
- */
 public class IndexEntry {
     private final int id;
     private final String tagName;
     private final int depth;
-    private final int parentId; // -1 for root elements
+    private final int parentId;
     private final Map<String, String> attributes;
     private int childCount;
     private String textPreview;
@@ -43,7 +39,7 @@ public class IndexEntry {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("<").append(tagName);
+        final var sb = new StringBuilder("<").append(tagName);
         int shown = 0;
         for (var entry : attributes.entrySet()) {
             if (shown >= 3) { sb.append(" ..."); break; }

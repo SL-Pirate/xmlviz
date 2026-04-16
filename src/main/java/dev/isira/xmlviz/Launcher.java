@@ -1,9 +1,0 @@
-package dev.isira.xmlviz;
-
-import javafx.application.Application;
-
-public class Launcher {
-    public static void main(String[] args) {
-        Application.launch(XmlVizApp.class, args);
-    }
-}

@@ -1,9 +1,5 @@
 package dev.isira.xmlviz.model;
 
-/**
- * Tracks cardinality of a child element type within a parent element type.
- * Min/max occurrences are computed across all instances of the parent.
- */
 public class ChildInfo {
     private int minOccurrences = Integer.MAX_VALUE;
     private int maxOccurrences = 0;
@@ -34,8 +30,8 @@ public class ChildInfo {
     }
 
     public String getCardinality() {
-        int min = getMinOccurrences();
-        int max = maxOccurrences;
+        final var min = getMinOccurrences();
+        final var max = maxOccurrences;
         if (min == 0 && max == 0) return "0";
         if (min == 0 && max == 1) return "0..1";
         if (min == 0 && max > 1) return "0..*";

@@ -3,3 +3,6 @@
 - Use `final` for local variables that are not reassigned after initialization to indicate immutability.
 - For generics that infer type during initialization avoid `var`.
   - Eg: `final List<String> names = new ArrayList<>();` instead of `final var names = new ArrayList<String>();`
+
+## Use underscores for unused variables inside lambdas.
+- `Eg: exitItem.setOnAction(e -> Platform.exit());` => `exitItem.setOnAction(_ -> Platform.exit());` 

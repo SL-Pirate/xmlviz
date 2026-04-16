@@ -10,20 +10,14 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import java.util.List;
 import java.util.Map;
 
-/**
- * Instance tree view with lazy-loading TreeView on the left
- * and a detail panel on the right.
- */
 public class InstanceTreeView extends SplitPane {
 
     private final TreeView<IndexEntry> treeView = new TreeView<>();
     private final VBox detailPanel = new VBox(8);
     private ParseResult currentResult;
 
-    // Detail panel labels
     private final Label tagNameLabel = new Label();
     private final Label xpathLabel = new Label();
     private final Label depthLabel = new Label();
@@ -44,7 +38,7 @@ public class InstanceTreeView extends SplitPane {
     }
 
     private void showPlaceholder() {
-        TreeItem<IndexEntry> placeholder = new TreeItem<>(null);
+        final TreeItem<IndexEntry> placeholder = new TreeItem<>(null);
         treeView.setRoot(placeholder);
         treeView.setShowRoot(false);
     }
@@ -78,11 +72,10 @@ public class InstanceTreeView extends SplitPane {
         detailPanel.setPadding(new Insets(12));
         detailPanel.setStyle("-fx-background-color: #fafafa;");
 
-        Label headerLabel = new Label("Element Details");
+        final var headerLabel = new Label("Element Details");
         headerLabel.setFont(Font.font("System", FontWeight.BOLD, 14));
 
-        // Info fields
-        GridPane infoGrid = new GridPane();
+        final var infoGrid = new GridPane();
         infoGrid.setHgap(10);
         infoGrid.setVgap(4);
 
@@ -99,16 +92,15 @@ public class InstanceTreeView extends SplitPane {
         xpathLabel.setMaxWidth(400);
         xpathLabel.setStyle("-fx-font-family: monospace; -fx-font-size: 11;");
 
-        // Attributes table
-        Label attrHeader = new Label("Attributes");
+        final var attrHeader = new Label("Attributes");
         attrHeader.setFont(Font.font("System", FontWeight.BOLD, 12));
 
-        TableColumn<Map.Entry<String, String>, String> nameCol = new TableColumn<>("Name");
+        final TableColumn<Map.Entry<String, String>, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(cd ->
                 new javafx.beans.property.SimpleStringProperty(cd.getValue().getKey()));
         nameCol.setPrefWidth(120);
 
-        TableColumn<Map.Entry<String, String>, String> valueCol = new TableColumn<>("Value");
+        final TableColumn<Map.Entry<String, String>, String> valueCol = new TableColumn<>("Value");
         valueCol.setCellValueFactory(cd ->
                 new javafx.beans.property.SimpleStringProperty(cd.getValue().getValue()));
         valueCol.setPrefWidth(250);
@@ -118,8 +110,7 @@ public class InstanceTreeView extends SplitPane {
         attrTable.setPrefHeight(150);
         attrTable.setPlaceholder(new Label("No attributes"));
 
-        // Text content
-        Label textHeader = new Label("Text Content");
+        final var textHeader = new Label("Text Content");
         textHeader.setFont(Font.font("System", FontWeight.BOLD, 12));
         textContentArea.setEditable(false);
         textContentArea.setWrapText(true);
@@ -143,7 +134,7 @@ public class InstanceTreeView extends SplitPane {
 
     public void render(ParseResult result) {
         this.currentResult = result;
-        List<IndexEntry> roots = result.getRootEntries();
+        final var roots = result.getRootEntries();
 
         if (roots.isEmpty()) {
             showPlaceholder();
@@ -151,15 +142,13 @@ public class InstanceTreeView extends SplitPane {
         }
 
         if (roots.size() == 1) {
-            // Single root — make it the tree root
-            TreeItem<IndexEntry> rootItem = createTreeItem(roots.get(0));
+            final var rootItem = createTreeItem(roots.getFirst());
             treeView.setRoot(rootItem);
             rootItem.setExpanded(true);
         } else {
-            // Multiple roots — synthetic root
-            TreeItem<IndexEntry> syntheticRoot = new TreeItem<>(null);
+            final TreeItem<IndexEntry> syntheticRoot = new TreeItem<>(null);
             syntheticRoot.setExpanded(true);
-            for (IndexEntry root : roots) {
+            for (final var root : roots) {
                 syntheticRoot.getChildren().add(createTreeItem(root));
             }
             treeView.setRoot(syntheticRoot);
@@ -170,10 +159,9 @@ public class InstanceTreeView extends SplitPane {
     }
 
     private TreeItem<IndexEntry> createTreeItem(IndexEntry entry) {
-        TreeItem<IndexEntry> item = new TreeItem<>(entry);
+        final TreeItem<IndexEntry> item = new TreeItem<>(entry);
 
         if (entry.getChildCount() > 0) {
-            // Add a dummy child to show the expand arrow
             item.getChildren().add(new TreeItem<>(null));
 
             item.expandedProperty().addListener((obs, wasExpanded, isExpanded) -> {
@@ -188,12 +176,12 @@ public class InstanceTreeView extends SplitPane {
     }
 
     private void loadChildren(TreeItem<IndexEntry> parentItem) {
-        IndexEntry parent = parentItem.getValue();
+        final var parent = parentItem.getValue();
         parentItem.getChildren().clear();
 
-        List<Integer> childIds = currentResult.getChildIds(parent.getId());
-        for (int childId : childIds) {
-            IndexEntry childEntry = currentResult.getInstanceIndex().get(childId);
+        final var childIds = currentResult.getChildIds(parent.getId());
+        for (final var childId : childIds) {
+            final var childEntry = currentResult.getInstanceIndex().get(childId);
             parentItem.getChildren().add(createTreeItem(childEntry));
         }
     }
@@ -209,7 +197,7 @@ public class InstanceTreeView extends SplitPane {
         attrTable.getItems().clear();
         attrTable.getItems().addAll(entry.getAttributes().entrySet());
 
-        String text = entry.getTextPreview();
+        final var text = entry.getTextPreview();
         if (text != null && !text.isEmpty()) {
             textContentArea.setText(text + (entry.isHasMoreText() ? "\n\n[truncated...]" : ""));
         } else {
@@ -227,7 +215,7 @@ public class InstanceTreeView extends SplitPane {
     }
 
     private Label boldLabel(String text) {
-        Label label = new Label(text);
+        final var label = new Label(text);
         label.setFont(Font.font("System", FontWeight.BOLD, 12));
         return label;
     }

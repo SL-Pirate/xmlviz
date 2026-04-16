@@ -4,7 +4,6 @@ import dev.isira.xmlviz.model.ParseResult;
 import dev.isira.xmlviz.parsing.XmlParser;
 import dev.isira.xmlviz.ui.ErdView;
 import dev.isira.xmlviz.ui.InstanceTreeView;
-
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -16,9 +15,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.TransferMode;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 
@@ -35,30 +37,40 @@ public class XmlVizApp extends Application {
     public void start(Stage stage) {
         this.primaryStage = stage;
 
-        BorderPane root = new BorderPane();
-
-        // Menu bar
+        final var root = new BorderPane();
         root.setTop(createMenuBar());
 
-        // Tab pane
-        TabPane tabPane = new TabPane();
+        final var tabPane = new TabPane();
         tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         erdView = new ErdView();
-        Tab erdTab = new Tab("Schema / ERD", erdView);
+        final var erdTab = new Tab("Schema / ERD", erdView);
 
         instanceTreeView = new InstanceTreeView();
-        Tab treeTab = new Tab("Instance Tree", instanceTreeView);
+        final var treeTab = new Tab("Instance Tree", instanceTreeView);
 
         tabPane.getTabs().addAll(erdTab, treeTab);
         root.setCenter(tabPane);
-
-        // Status bar
         root.setBottom(createStatusBar());
 
-        Scene scene = new Scene(root, 1200, 800);
+        final var scene = getScene(root);
 
-        // Drag-and-drop XML files onto the window
+        stage.setTitle("XML Structure Visualizer");
+        stage.setScene(scene);
+        stage.show();
+
+        final var params = getParameters().getRaw();
+        if (!params.isEmpty()) {
+            final var argFile = new File(params.getFirst());
+            if (argFile.isFile()) {
+                parseFile(argFile);
+            }
+        }
+    }
+
+    private @NonNull Scene getScene(BorderPane root) {
+        final var scene = new Scene(root, 1200, 800);
+
         scene.setOnDragOver(event -> {
             if (event.getDragboard().hasFiles()) {
                 event.acceptTransferModes(TransferMode.COPY);
@@ -66,9 +78,9 @@ public class XmlVizApp extends Application {
             event.consume();
         });
         scene.setOnDragDropped(event -> {
-            var files = event.getDragboard().getFiles();
+            final var files = event.getDragboard().getFiles();
             if (files != null && !files.isEmpty()) {
-                File file = files.getFirst();
+                final var file = files.getFirst();
                 if (file.getName().toLowerCase().endsWith(".xml")) {
                     parseFile(file);
                 }
@@ -76,48 +88,34 @@ public class XmlVizApp extends Application {
             event.setDropCompleted(true);
             event.consume();
         });
-
-        stage.setTitle("XML Structure Visualizer");
-        stage.setScene(scene);
-        stage.show();
-
-        // If a file was passed as argument, open it
-        var params = getParameters().getRaw();
-        if (!params.isEmpty()) {
-            File argFile = new File(params.getFirst());
-            if (argFile.isFile()) {
-                parseFile(argFile);
-            }
-        }
+        return scene;
     }
 
     private MenuBar createMenuBar() {
-        // File menu
-        MenuItem openItem = new MenuItem("Open...");
+        final var openItem = new MenuItem("Open...");
         openItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN));
         openItem.setOnAction(e -> {
-            FileChooser fc = new FileChooser();
+            final var fc = new FileChooser();
             fc.setTitle("Open XML File");
             fc.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("XML Files", "*.xml", "*.xsd", "*.xsl", "*.xslt", "*.svg", "*.xhtml"),
                     new FileChooser.ExtensionFilter("All Files", "*.*")
             );
-            File file = fc.showOpenDialog(primaryStage);
+            final var file = fc.showOpenDialog(primaryStage);
             if (file != null) {
                 parseFile(file);
             }
         });
 
-        MenuItem exitItem = new MenuItem("Exit");
+        final var exitItem = new MenuItem("Exit");
         exitItem.setOnAction(e -> Platform.exit());
 
-        Menu fileMenu = new Menu("File", null, openItem, new SeparatorMenuItem(), exitItem);
-
+        final var fileMenu = new Menu("File", null, openItem, new SeparatorMenuItem(), exitItem);
         return new MenuBar(fileMenu);
     }
 
     private HBox createStatusBar() {
-        HBox bar = new HBox(12);
+        final var bar = new HBox(12);
         bar.setAlignment(Pos.CENTER_LEFT);
         bar.setPadding(new Insets(4, 10, 4, 10));
         bar.setStyle("-fx-background-color: #e8e8e8; -fx-border-color: #ccc; -fx-border-width: 1 0 0 0;");
@@ -142,17 +140,17 @@ public class XmlVizApp extends Application {
         statusLabel.setText("Parsing: " + file.getName() + " (" + formatFileSize(file.length()) + ")");
         elementCountLabel.setText("");
 
-        Task<ParseResult> task = new Task<>() {
+        final Task<ParseResult> task = new Task<>() {
             @Override
             protected ParseResult call() throws Exception {
-                XmlParser parser = new XmlParser();
+                final var parser = new XmlParser();
                 return parser.parse(file, progress ->
                         Platform.runLater(() -> progressBar.setProgress(progress)));
             }
         };
 
         task.setOnSucceeded(e -> {
-            ParseResult result = task.getValue();
+            final var result = task.getValue();
             progressBar.setVisible(false);
             statusLabel.setText("File: " + file.getName());
             elementCountLabel.setText(String.format("%,d elements | %d types",
@@ -166,19 +164,19 @@ public class XmlVizApp extends Application {
 
         task.setOnFailed(e -> {
             progressBar.setVisible(false);
-            Throwable ex = task.getException();
-            String msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+            final var ex = task.getException();
+            final var msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
             statusLabel.setText("Error: " + msg);
             elementCountLabel.setText("");
 
-            Alert alert = new Alert(Alert.AlertType.ERROR);
+            final var alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Parse Error");
             alert.setHeaderText("Failed to parse " + file.getName());
             alert.setContentText(msg);
             alert.showAndWait();
         });
 
-        Thread thread = new Thread(task, "xml-parser");
+        final var thread = new Thread(task, "xml-parser");
         thread.setDaemon(true);
         thread.start();
     }
