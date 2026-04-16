@@ -8,3 +8,7 @@
 - `Eg: exitItem.setOnAction(e -> Platform.exit());` => `exitItem.setOnAction(_ -> Platform.exit());` 
 
 ## Use lombok for ****** sake
+
+## Adding new dependencies
+- Do not under any circumstance add a new dependency by yourself.
+- If a new 3rd party dependency is required, recommend and ask the human to add it for you.

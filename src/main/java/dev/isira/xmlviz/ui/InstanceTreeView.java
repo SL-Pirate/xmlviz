@@ -4,6 +4,8 @@ import dev.isira.xmlviz.model.IndexEntry;
 import dev.isira.xmlviz.model.ParseResult;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -73,8 +75,25 @@ public class InstanceTreeView extends SplitPane {
             if (event.isShortcutDown() && event.getCode() == KeyCode.F) {
                 searchBar.toggle();
                 event.consume();
+            } else if (event.isShortcutDown() && event.getCode() == KeyCode.C) {
+                copySelectedNodeAsXml();
+                event.consume();
             }
         });
+
+        final var copyMenuItem = new MenuItem("Copy as XML");
+        copyMenuItem.setOnAction(_ -> copySelectedNodeAsXml());
+        final var contextMenu = new ContextMenu(copyMenuItem);
+        treeView.setContextMenu(contextMenu);
+    }
+
+    private void copySelectedNodeAsXml() {
+        final var selected = treeView.getSelectionModel().getSelectedItem();
+        if (selected == null || selected.getValue() == null || currentResult == null) return;
+        final var xml = currentResult.toXml(selected.getValue());
+        final var content = new ClipboardContent();
+        content.putString(xml);
+        Clipboard.getSystemClipboard().setContent(content);
     }
 
     public void render(ParseResult result) {
