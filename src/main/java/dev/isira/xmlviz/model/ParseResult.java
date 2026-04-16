@@ -26,6 +26,14 @@ public class ParseResult {
         this.totalElements = totalElements;
     }
 
+    private static String escapeXml(String text) {
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
+    }
+
     public List<Integer> getChildIds(int parentId) {
         return childrenByParentId.getOrDefault(parentId, Collections.emptyList());
     }
@@ -37,6 +45,61 @@ public class ParseResult {
             roots.add(instanceIndex.get(id));
         }
         return roots;
+    }
+
+    public String toXml(IndexEntry entry) {
+        final int[] budget = {50_000};
+        return toXml(entry, 0, budget);
+    }
+
+    private String toXml(IndexEntry entry, int indent, int[] budget) {
+        if (budget[0]-- <= 0) {
+            return "  ".repeat(indent) + "<!-- ... remaining elements omitted (limit reached) -->";
+        }
+
+        final var sb = new StringBuilder();
+        sb.repeat("  ", indent);
+        sb.append("<").append(entry.getTagName());
+
+        for (final var attr : entry.getAttributes().entrySet()) {
+            sb.append(" ").append(attr.getKey()).append("=\"").append(escapeXml(attr.getValue())).append("\"");
+        }
+
+        final var childIds = getChildIds(entry.getId());
+        final var text = entry.getTextPreview();
+        final var hasChildren = !childIds.isEmpty();
+        final var hasText = text != null && !text.isEmpty();
+
+        if (!hasChildren && !hasText) {
+            sb.append("/>");
+        } else {
+            sb.append(">");
+            if (hasText) {
+                if (hasChildren) {
+                    sb.append("\n").repeat("  ", indent + 1);
+                }
+                sb.append(escapeXml(text));
+                if (entry.isHasMoreText()) {
+                    sb.append("[truncated]");
+                }
+            }
+            if (hasChildren) {
+                sb.append("\n");
+                for (final var childId : childIds) {
+                    if (budget[0] <= 0) {
+                        final var remaining = childIds.size() - childIds.indexOf(childId);
+                        sb.repeat("  ", indent + 1)
+                                .append("<!-- ... ").append(remaining).append(" more child elements omitted -->\n");
+                        break;
+                    }
+                    final var child = instanceIndex.get(childId);
+                    sb.append(toXml(child, indent + 1, budget)).append("\n");
+                }
+                sb.repeat("  ", indent);
+            }
+            sb.append("</").append(entry.getTagName()).append(">");
+        }
+        return sb.toString();
     }
 
     public String buildXPath(IndexEntry entry) {
