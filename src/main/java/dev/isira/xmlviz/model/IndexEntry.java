@@ -34,6 +34,14 @@ public class IndexEntry {
         return s.substring(0, max) + "...";
     }
 
+    public boolean matches(String lowerCaseQuery) {
+        if (tagName.toLowerCase().contains(lowerCaseQuery)) return true;
+        for (final var value : attributes.values()) {
+            if (value.toLowerCase().contains(lowerCaseQuery)) return true;
+        }
+        return textPreview != null && textPreview.toLowerCase().contains(lowerCaseQuery);
+    }
+
     @Override
     public String toString() {
         final var sb = new StringBuilder("<").append(tagName);
