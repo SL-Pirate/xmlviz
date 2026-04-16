@@ -147,7 +147,7 @@ public class XmlParser {
         }
     }
 
-    private String detectEncoding(File file) {
+    String detectEncoding(File file) {
         try (final var fis = new FileInputStream(file)) {
             final var header = new byte[128];
             final var read = fis.read(header);

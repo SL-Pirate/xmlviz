@@ -2,6 +2,7 @@ package dev.isira.xmlviz;
 
 import dev.isira.xmlviz.model.ParseResult;
 import dev.isira.xmlviz.parsing.XmlParser;
+import dev.isira.xmlviz.parsing.XmlSanitizer;
 import dev.isira.xmlviz.ui.ErdView;
 import dev.isira.xmlviz.ui.InstanceTreeView;
 import javafx.application.Application;
@@ -22,6 +23,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.jspecify.annotations.NonNull;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 
 public class XmlVizApp extends Application {
@@ -169,14 +171,86 @@ public class XmlVizApp extends Application {
             statusLabel.setText("Error: " + msg);
             elementCountLabel.setText("");
 
-            final var alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Parse Error");
-            alert.setHeaderText("Failed to parse " + file.getName());
-            alert.setContentText(msg);
-            alert.showAndWait();
+            if (looksLikeXmlEntityError(ex)) {
+                showAutoFixDialog(file, msg);
+            } else {
+                showGenericErrorDialog(file, msg);
+            }
         });
 
         final var thread = new Thread(task, "xml-parser");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private boolean looksLikeXmlEntityError(Throwable ex) {
+        Throwable current = ex;
+        while (current != null) {
+            if (current instanceof XMLStreamException && current.getMessage() != null) {
+                final var msg = current.getMessage().toLowerCase();
+                if (msg.contains("entity name must immediately follow")
+                        || msg.contains("the reference to entity")
+                        || msg.contains("the entity name must immediately follow")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private void showGenericErrorDialog(File file, String msg) {
+        final var alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Parse Error");
+        alert.setHeaderText("Failed to parse " + file.getName());
+        alert.setContentText(msg);
+        alert.showAndWait();
+    }
+
+    private void showAutoFixDialog(File file, String msg) {
+        final var autoFixButton = new ButtonType("Auto-Fix & Retry", ButtonBar.ButtonData.OK_DONE);
+        final var alert = new Alert(Alert.AlertType.WARNING, msg, autoFixButton, ButtonType.CANCEL);
+        alert.setTitle("Malformed XML");
+        alert.setHeaderText("Failed to parse " + file.getName()
+                + "\n\nThe file contains unescaped ampersands (&). "
+                + "This is common in WXR/WordPress export files.\n\n"
+                + "Auto-fix will create a sanitized copy and retry parsing.");
+
+        final var result = alert.showAndWait();
+        if (result.isPresent() && result.get() == autoFixButton) {
+            sanitizeAndReparse(file);
+        }
+    }
+
+    private void sanitizeAndReparse(File originalFile) {
+        progressBar.setVisible(true);
+        progressBar.setProgress(0);
+        statusLabel.setText("Sanitizing: " + originalFile.getName() + "...");
+
+        final Task<File> sanitizeTask = new Task<>() {
+            @Override
+            protected File call() throws Exception {
+                final var sanitizer = new XmlSanitizer();
+                return sanitizer.sanitize(originalFile, progress ->
+                        Platform.runLater(() -> progressBar.setProgress(progress)));
+            }
+        };
+
+        sanitizeTask.setOnSucceeded(_ -> {
+            final var sanitizedFile = sanitizeTask.getValue();
+            sanitizedFile.deleteOnExit();
+            parseFile(sanitizedFile);
+        });
+
+        sanitizeTask.setOnFailed(_ -> {
+            progressBar.setVisible(false);
+            final var ex = sanitizeTask.getException();
+            final var errMsg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();
+            statusLabel.setText("Sanitization failed: " + errMsg);
+            showGenericErrorDialog(originalFile, errMsg);
+        });
+
+        final var thread = new Thread(sanitizeTask, "xml-sanitizer");
         thread.setDaemon(true);
         thread.start();
     }
