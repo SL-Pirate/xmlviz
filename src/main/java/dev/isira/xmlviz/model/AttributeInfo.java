@@ -2,6 +2,7 @@ package dev.isira.xmlviz.model;
 
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -17,6 +18,10 @@ public class AttributeInfo {
 
     public String getInferredType() {
         return inferredType != null ? inferredType : "string";
+    }
+
+    public Set<String> getSampleValues() {
+        return Collections.unmodifiableSet(sampleValues);
     }
 
     public void recordValue(String value) {

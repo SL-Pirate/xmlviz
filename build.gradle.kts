@@ -1,6 +1,7 @@
 plugins {
     java
     application
+    id("com.gradleup.shadow") version "9.4.1"
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("org.beryx.jlink") version "2.25.0"
 }
@@ -43,13 +44,7 @@ dependencies {
     implementation("org.projectlombok:lombok:1.18.44")
     annotationProcessor("org.projectlombok:lombok:1.18.44")
     implementation("ch.qos.logback:logback-classic:1.5.32")
-//    implementation("eu.hansolo:tilesfx:21.0.9") {
-//        exclude(group = "org.openjfx")
-//    }
-//    implementation("com.github.almasb:fxgl:11.17") {
-//        exclude(group = "org.openjfx")
-//        exclude(group = "org.jetbrains.kotlin")
-//    }
+    // testing
     testImplementation("org.junit.jupiter:junit-jupiter:${junitVersion}")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

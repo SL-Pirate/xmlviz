@@ -52,6 +52,11 @@ public class ParseResult {
         return toXml(entry, 0, budget);
     }
 
+    public String toXml(IndexEntry entry, int maxNodes) {
+        final int[] budget = {maxNodes};
+        return toXml(entry, 0, budget);
+    }
+
     private String toXml(IndexEntry entry, int indent, int[] budget) {
         if (budget[0]-- <= 0) {
             return "  ".repeat(indent) + "<!-- ... remaining elements omitted (limit reached) -->";
