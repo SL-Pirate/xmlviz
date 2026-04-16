@@ -22,6 +22,7 @@ public class TreeSearchBar extends HBox {
     private Task<List<Integer>> activeSearchTask;
     private List<Integer> searchResults = List.of();
     private int currentResultIndex = -1;
+    private String lastSearchedQuery = "";
 
     public TreeSearchBar(TreeView<IndexEntry> treeView) {
         super(6);
@@ -43,7 +44,7 @@ public class TreeSearchBar extends HBox {
                     navigatePrevious();
                 } else {
                     if (searchResults.isEmpty()
-                            || !searchField.getText().strip().equalsIgnoreCase(currentSearchQuery())) {
+                            || !searchField.getText().strip().equalsIgnoreCase(lastSearchedQuery)) {
                         executeSearch(searchField.getText());
                     } else {
                         navigateNext();
@@ -97,6 +98,7 @@ public class TreeSearchBar extends HBox {
         searchResults = List.of();
         searchResultSet.clear();
         currentResultIndex = -1;
+        lastSearchedQuery = "";
         resultLabel.setText("");
         searchField.clear();
         treeView.refresh();
@@ -110,10 +112,6 @@ public class TreeSearchBar extends HBox {
         return currentResultIndex >= 0 && searchResults.get(currentResultIndex) == entryId;
     }
 
-    private String currentSearchQuery() {
-        return searchField.getText().strip().toLowerCase();
-    }
-
     private void executeSearch(String query) {
         if (activeSearchTask != null && activeSearchTask.isRunning()) {
             activeSearchTask.cancel();
@@ -125,6 +123,7 @@ public class TreeSearchBar extends HBox {
             return;
         }
 
+        lastSearchedQuery = normalizedQuery;
         resultLabel.setText("Searching...");
 
         final var task = new Task<List<Integer>>() {
