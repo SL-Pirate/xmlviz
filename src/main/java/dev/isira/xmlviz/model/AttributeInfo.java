@@ -1,0 +1,75 @@
+package dev.isira.xmlviz.model;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+/**
+ * Metadata about an attribute observed on instances of an element type.
+ * Tracks occurrence count, sample values, and infers the data type.
+ */
+public class AttributeInfo {
+    private final String name;
+    private int occurrenceCount;
+    private final Set<String> sampleValues = new LinkedHashSet<>();
+    private String inferredType; // null until first value seen
+
+    public AttributeInfo(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getOccurrenceCount() {
+        return occurrenceCount;
+    }
+
+    public Set<String> getSampleValues() {
+        return sampleValues;
+    }
+
+    public String getInferredType() {
+        return inferredType != null ? inferredType : "string";
+    }
+
+    public void recordValue(String value) {
+        occurrenceCount++;
+        if (sampleValues.size() < 10) {
+            sampleValues.add(value);
+        }
+        inferType(value);
+    }
+
+    private void inferType(String value) {
+        if (value == null || value.isEmpty()) return;
+        // Once we've fallen back to string, stay there
+        if ("string".equals(inferredType)) return;
+
+        String detected = detectType(value);
+        if (inferredType == null) {
+            inferredType = detected;
+        } else if (!inferredType.equals(detected)) {
+            // Widen: integer -> decimal is OK, everything else -> string
+            if (inferredType.equals("integer") && detected.equals("decimal")) {
+                inferredType = "decimal";
+            } else {
+                inferredType = "string";
+            }
+        }
+    }
+
+    private String detectType(String v) {
+        if (v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false")) return "boolean";
+        try {
+            Long.parseLong(v);
+            return "integer";
+        } catch (NumberFormatException ignored) {}
+        try {
+            Double.parseDouble(v);
+            return "decimal";
+        } catch (NumberFormatException ignored) {}
+        if (v.matches("\\d{4}-\\d{2}-\\d{2}.*")) return "date";
+        return "string";
+    }
+}

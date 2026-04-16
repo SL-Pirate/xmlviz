@@ -1,14 +1,14 @@
 module dev.isira.xmlviz {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.web;
+    requires java.xml;
 
-    requires org.controlsfx.controls;
-    requires org.kordamp.ikonli.javafx;
-    requires org.kordamp.bootstrapfx.core;
-//    requires eu.hansolo.tilesfx;
-//    requires com.almasb.fxgl.all;
+    opens dev.isira.xmlviz to javafx.fxml, javafx.graphics;
+    opens dev.isira.xmlviz.model to javafx.base;
+    opens dev.isira.xmlviz.ui to javafx.fxml, javafx.graphics;
 
-    opens dev.isira.xmlviz to javafx.fxml;
     exports dev.isira.xmlviz;
+    exports dev.isira.xmlviz.model;
+    exports dev.isira.xmlviz.parsing;
+    exports dev.isira.xmlviz.ui;
 }

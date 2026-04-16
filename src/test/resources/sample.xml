@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<library>
+    <catalog name="Main Branch" established="2010-03-15">
+        <book id="1" isbn="978-0-13-468599-1" format="hardcover">
+            <title>Effective Java</title>
+            <author>Joshua Bloch</author>
+            <publisher>Addison-Wesley</publisher>
+            <year>2018</year>
+            <price currency="USD">45.00</price>
+            <tags>
+                <tag>java</tag>
+                <tag>programming</tag>
+                <tag>best-practices</tag>
+            </tags>
+            <reviews>
+                <review rating="5" reviewer="alice">
+                    <comment>Essential reading for any Java developer.</comment>
+                    <date>2019-06-15</date>
+                </review>
+                <review rating="4" reviewer="bob">
+                    <comment>Great book, very thorough.</comment>
+                    <date>2020-01-20</date>
+                </review>
+            </reviews>
+        </book>
+        <book id="2" isbn="978-0-596-51774-8" format="paperback">
+            <title>JavaScript: The Good Parts</title>
+            <author>Douglas Crockford</author>
+            <publisher>O'Reilly Media</publisher>
+            <year>2008</year>
+            <price currency="USD">22.99</price>
+            <tags>
+                <tag>javascript</tag>
+                <tag>web</tag>
+            </tags>
+        </book>
+        <book id="3" isbn="978-0-13-235088-4" format="hardcover">
+            <title>Clean Code</title>
+            <author>Robert C. Martin</author>
+            <publisher>Prentice Hall</publisher>
+            <year>2008</year>
+            <price currency="USD">39.99</price>
+            <tags>
+                <tag>programming</tag>
+                <tag>clean-code</tag>
+                <tag>software-engineering</tag>
+            </tags>
+            <reviews>
+                <review rating="5" reviewer="charlie">
+                    <comment>Changed how I write code.</comment>
+                    <date>2018-11-03</date>
+                </review>
+            </reviews>
+        </book>
+    </catalog>
+    <members>
+        <member id="101" since="2015-07-01" active="true">
+            <name>Alice Johnson</name>
+            <email>alice@example.com</email>
+            <borrowed>
+                <loan bookId="1" dueDate="2024-02-15"/>
+            </borrowed>
+        </member>
+        <member id="102" since="2018-03-20" active="true">
+            <name>Bob Smith</name>
+            <email>bob@example.com</email>
+            <borrowed>
+                <loan bookId="2" dueDate="2024-01-30"/>
+                <loan bookId="3" dueDate="2024-03-01"/>
+            </borrowed>
+        </member>
+        <member id="103" since="2022-01-10" active="false">
+            <name>Charlie Brown</name>
+            <email>charlie@example.com</email>
+            <borrowed/>
+        </member>
+    </members>
+</library>

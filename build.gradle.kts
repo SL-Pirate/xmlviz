@@ -1,7 +1,6 @@
 plugins {
     java
     application
-    id("org.javamodularity.moduleplugin") version "1.8.15"
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("org.beryx.jlink") version "2.25.0"
 }
@@ -27,7 +26,7 @@ tasks.withType<JavaCompile> {
 
 application {
     mainModule.set("dev.isira.xmlviz")
-    mainClass.set("dev.isira.xmlviz.HelloApplication")
+    mainClass.set("dev.isira.xmlviz.XmlVizApp")
 }
 
 javafx {
@@ -51,8 +50,8 @@ dependencies {
 //        exclude(group = "org.openjfx")
 //        exclude(group = "org.jetbrains.kotlin")
 //    }
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testImplementation("org.junit.jupiter:junit-jupiter:${junitVersion}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
