@@ -1,11 +1,13 @@
 package dev.isira.xmlviz.model;
 
+import lombok.Getter;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class AttributeInfo {
+    @Getter
     private final String name;
-    private int occurrenceCount;
     private final Set<String> sampleValues = new LinkedHashSet<>();
     private String inferredType;
 
@@ -13,24 +15,11 @@ public class AttributeInfo {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public int getOccurrenceCount() {
-        return occurrenceCount;
-    }
-
-    public Set<String> getSampleValues() {
-        return sampleValues;
-    }
-
     public String getInferredType() {
         return inferredType != null ? inferredType : "string";
     }
 
     public void recordValue(String value) {
-        occurrenceCount++;
         if (sampleValues.size() < 10) {
             sampleValues.add(value);
         }
@@ -58,11 +47,13 @@ public class AttributeInfo {
         try {
             Long.parseLong(v);
             return "integer";
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
         try {
             Double.parseDouble(v);
             return "decimal";
-        } catch (NumberFormatException ignored) {}
+        } catch (NumberFormatException ignored) {
+        }
         if (v.matches("\\d{4}-\\d{2}-\\d{2}.*")) return "date";
         return "string";
     }

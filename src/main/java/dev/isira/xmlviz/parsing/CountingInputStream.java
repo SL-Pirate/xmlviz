@@ -1,18 +1,18 @@
 package dev.isira.xmlviz.parsing;
 
+import lombok.Getter;
+import org.jspecify.annotations.NonNull;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class CountingInputStream extends FilterInputStream {
+    @Getter
     private long bytesRead = 0;
 
     public CountingInputStream(InputStream in) {
         super(in);
-    }
-
-    public long getBytesRead() {
-        return bytesRead;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class CountingInputStream extends FilterInputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte @NonNull [] b, int off, int len) throws IOException {
         final var result = super.read(b, off, len);
         if (result > 0) bytesRead += result;
         return result;

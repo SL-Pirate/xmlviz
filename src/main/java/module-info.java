@@ -2,6 +2,8 @@ module dev.isira.xmlviz {
     requires javafx.controls;
     requires java.xml;
     requires org.jspecify;
+    requires static lombok;
+    requires org.slf4j;
 
     opens dev.isira.xmlviz to javafx.graphics;
     opens dev.isira.xmlviz.model to javafx.base;

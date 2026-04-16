@@ -94,7 +94,7 @@ public class XmlVizApp extends Application {
     private MenuBar createMenuBar() {
         final var openItem = new MenuItem("Open...");
         openItem.setAccelerator(new KeyCodeCombination(KeyCode.O, KeyCombination.SHORTCUT_DOWN));
-        openItem.setOnAction(e -> {
+        openItem.setOnAction(_ -> {
             final var fc = new FileChooser();
             fc.setTitle("Open XML File");
             fc.getExtensionFilters().addAll(
@@ -108,7 +108,7 @@ public class XmlVizApp extends Application {
         });
 
         final var exitItem = new MenuItem("Exit");
-        exitItem.setOnAction(e -> Platform.exit());
+        exitItem.setOnAction(_ -> Platform.exit());
 
         final var fileMenu = new Menu("File", null, openItem, new SeparatorMenuItem(), exitItem);
         return new MenuBar(fileMenu);
@@ -149,7 +149,7 @@ public class XmlVizApp extends Application {
             }
         };
 
-        task.setOnSucceeded(e -> {
+        task.setOnSucceeded(_ -> {
             final var result = task.getValue();
             progressBar.setVisible(false);
             statusLabel.setText("File: " + file.getName());
@@ -162,7 +162,7 @@ public class XmlVizApp extends Application {
             primaryStage.setTitle("XML Structure Visualizer — " + file.getName());
         });
 
-        task.setOnFailed(e -> {
+        task.setOnFailed(_ -> {
             progressBar.setVisible(false);
             final var ex = task.getException();
             final var msg = ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName();

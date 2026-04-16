@@ -2,11 +2,11 @@ package dev.isira.xmlviz.ui;
 
 import dev.isira.xmlviz.model.IndexEntry;
 import dev.isira.xmlviz.model.ParseResult;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -16,14 +16,13 @@ public class InstanceTreeView extends SplitPane {
 
     private final TreeView<IndexEntry> treeView = new TreeView<>();
     private final VBox detailPanel = new VBox(8);
-    private ParseResult currentResult;
-
     private final Label tagNameLabel = new Label();
     private final Label xpathLabel = new Label();
     private final Label depthLabel = new Label();
     private final Label childCountLabel = new Label();
     private final TableView<Map.Entry<String, String>> attrTable = new TableView<>();
     private final TextArea textContentArea = new TextArea();
+    private ParseResult currentResult;
 
     public InstanceTreeView() {
         setOrientation(Orientation.HORIZONTAL);
@@ -44,7 +43,7 @@ public class InstanceTreeView extends SplitPane {
     }
 
     private void setupTreeView() {
-        treeView.setCellFactory(tv -> new TreeCell<>() {
+        treeView.setCellFactory(_ -> new TreeCell<>() {
             @Override
             protected void updateItem(IndexEntry entry, boolean empty) {
                 super.updateItem(entry, empty);
@@ -58,7 +57,7 @@ public class InstanceTreeView extends SplitPane {
             }
         });
 
-        treeView.getSelectionModel().selectedItemProperty().addListener((obs, old, selected) -> {
+        treeView.getSelectionModel().selectedItemProperty().addListener((_, _, selected) -> {
             if (selected != null && selected.getValue() != null) {
                 showDetail(selected.getValue());
             } else {
@@ -164,7 +163,7 @@ public class InstanceTreeView extends SplitPane {
         if (entry.getChildCount() > 0) {
             item.getChildren().add(new TreeItem<>(null));
 
-            item.expandedProperty().addListener((obs, wasExpanded, isExpanded) -> {
+            item.expandedProperty().addListener((_, _, isExpanded) -> {
                 if (isExpanded && item.getChildren().size() == 1
                         && item.getChildren().getFirst().getValue() == null) {
                     loadChildren(item);

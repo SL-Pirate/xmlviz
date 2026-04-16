@@ -1,31 +1,30 @@
 package dev.isira.xmlviz.model;
 
-import java.util.*;
+import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class ParseResult {
+    @Getter
     private final Map<String, SchemaNode> schemaMap;
+    @Getter
     private final List<IndexEntry> instanceIndex;
     private final Map<Integer, List<Integer>> childrenByParentId;
+    @Getter
     private final long totalElements;
-    private final long fileSizeBytes;
 
     public ParseResult(Map<String, SchemaNode> schemaMap,
                        List<IndexEntry> instanceIndex,
                        Map<Integer, List<Integer>> childrenByParentId,
-                       long totalElements,
-                       long fileSizeBytes) {
+                       long totalElements) {
         this.schemaMap = schemaMap;
         this.instanceIndex = instanceIndex;
         this.childrenByParentId = childrenByParentId;
         this.totalElements = totalElements;
-        this.fileSizeBytes = fileSizeBytes;
     }
-
-    public Map<String, SchemaNode> getSchemaMap() { return schemaMap; }
-    public List<IndexEntry> getInstanceIndex() { return instanceIndex; }
-    public Map<Integer, List<Integer>> getChildrenByParentId() { return childrenByParentId; }
-    public long getTotalElements() { return totalElements; }
-    public long getFileSizeBytes() { return fileSizeBytes; }
 
     public List<Integer> getChildIds(int parentId) {
         return childrenByParentId.getOrDefault(parentId, Collections.emptyList());

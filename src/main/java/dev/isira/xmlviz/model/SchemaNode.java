@@ -1,20 +1,26 @@
 package dev.isira.xmlviz.model;
 
-import java.util.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class SchemaNode {
+    @Getter
     private final String tagName;
     private final Map<String, AttributeInfo> attributes = new LinkedHashMap<>();
     private final Map<String, ChildInfo> children = new LinkedHashMap<>();
+    @Getter
     private int instanceCount;
+    @Setter
+    @Getter
     private boolean hasTextContent;
 
     public SchemaNode(String tagName) {
         this.tagName = tagName;
-    }
-
-    public String getTagName() {
-        return tagName;
     }
 
     public Map<String, AttributeInfo> getAttributes() {
@@ -25,20 +31,8 @@ public class SchemaNode {
         return Collections.unmodifiableMap(children);
     }
 
-    public int getInstanceCount() {
-        return instanceCount;
-    }
-
-    public boolean isHasTextContent() {
-        return hasTextContent;
-    }
-
     public void incrementInstanceCount() {
         instanceCount++;
-    }
-
-    public void setHasTextContent(boolean hasTextContent) {
-        this.hasTextContent = hasTextContent;
     }
 
     public void addAttribute(String name, String value) {
@@ -50,6 +44,6 @@ public class SchemaNode {
     }
 
     public void updateChildOccurrence(String childTag, int count) {
-        children.computeIfAbsent(childTag, k -> new ChildInfo()).recordOccurrence(count);
+        children.computeIfAbsent(childTag, _ -> new ChildInfo()).recordOccurrence(count);
     }
 }

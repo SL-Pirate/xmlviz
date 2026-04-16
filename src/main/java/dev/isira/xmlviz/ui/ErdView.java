@@ -1,10 +1,7 @@
 package dev.isira.xmlviz.ui;
 
-import dev.isira.xmlviz.model.AttributeInfo;
-import dev.isira.xmlviz.model.ChildInfo;
 import dev.isira.xmlviz.model.ParseResult;
 import dev.isira.xmlviz.model.SchemaNode;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -27,7 +24,6 @@ public class ErdView extends ScrollPane {
     private static final double PADDING = 40;
 
     private final Pane canvas = new Pane();
-    private final Map<String, Region> nodeBoxes = new HashMap<>();
     private final Map<String, double[]> nodePositions = new HashMap<>();
 
     public ErdView() {
@@ -40,8 +36,8 @@ public class ErdView extends ScrollPane {
         canvas.setOnScroll(event -> {
             if (event.isControlDown()) {
                 final var factor = event.getDeltaY() > 0 ? 1.1 : 0.9;
-                final var newScaleX = Math.max(0.2, Math.min(3.0, canvas.getScaleX() * factor));
-                final var newScaleY = Math.max(0.2, Math.min(3.0, canvas.getScaleY() * factor));
+                final var newScaleX = Math.clamp(canvas.getScaleX() * factor, 0.2, 3.0);
+                final var newScaleY = Math.clamp(canvas.getScaleY() * factor, 0.2, 3.0);
                 canvas.setScaleX(newScaleX);
                 canvas.setScaleY(newScaleY);
                 event.consume();
@@ -63,7 +59,6 @@ public class ErdView extends ScrollPane {
         canvas.getChildren().clear();
         canvas.setScaleX(1.0);
         canvas.setScaleY(1.0);
-        nodeBoxes.clear();
         nodePositions.clear();
 
         final var schemaMap = result.getSchemaMap();
@@ -76,11 +71,11 @@ public class ErdView extends ScrollPane {
 
         final Map<Integer, List<String>> byLevel = new TreeMap<>();
         for (var entry : levels.entrySet()) {
-            byLevel.computeIfAbsent(entry.getValue(), k -> new ArrayList<>()).add(entry.getKey());
+            byLevel.computeIfAbsent(entry.getValue(), _ -> new ArrayList<>()).add(entry.getKey());
         }
 
         computePositions(schemaMap, byLevel);
-        drawEdges(schemaMap, levels);
+        drawEdges(schemaMap);
 
         for (var entry : schemaMap.entrySet()) {
             final var tagName = entry.getKey();
@@ -90,7 +85,6 @@ public class ErdView extends ScrollPane {
             box.setLayoutX(pos[0] - pos[2] / 2);
             box.setLayoutY(pos[1] - pos[3] / 2);
             canvas.getChildren().add(box);
-            nodeBoxes.put(tagName, box);
         }
     }
 
@@ -239,7 +233,7 @@ public class ErdView extends ScrollPane {
         return box;
     }
 
-    private void drawEdges(Map<String, SchemaNode> schemaMap, Map<String, Integer> levels) {
+    private void drawEdges(Map<String, SchemaNode> schemaMap) {
         for (var entry : schemaMap.entrySet()) {
             final var parentTag = entry.getKey();
             final var parentNode = entry.getValue();

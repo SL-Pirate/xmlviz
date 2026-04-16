@@ -1,6 +1,9 @@
 package dev.isira.xmlviz.parsing;
 
-import dev.isira.xmlviz.model.*;
+import dev.isira.xmlviz.model.IndexEntry;
+import dev.isira.xmlviz.model.ParseResult;
+import dev.isira.xmlviz.model.SchemaNode;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -11,6 +14,7 @@ import java.io.FileInputStream;
 import java.util.*;
 import java.util.function.Consumer;
 
+@Slf4j
 public class XmlParser {
 
     private static final int TEXT_PREVIEW_LENGTH = 200;
@@ -51,7 +55,7 @@ public class XmlParser {
         }
 
         return new ParseResult(schemaMap, instanceIndex, childrenByParentId,
-                instanceIndex.size(), fileSize);
+                instanceIndex.size());
     }
 
     private void handleStartElement(XMLStreamReader reader, Deque<ElementContext> stack,
@@ -85,7 +89,7 @@ public class XmlParser {
         final var indexPos = instanceIndex.size();
         final var entry = new IndexEntry(indexPos, tag, depth, parentId, attrs);
         instanceIndex.add(entry);
-        childrenByParentId.computeIfAbsent(parentId, k -> new ArrayList<>()).add(indexPos);
+        childrenByParentId.computeIfAbsent(parentId, _ -> new ArrayList<>()).add(indexPos);
 
         stack.push(new ElementContext(tag, indexPos));
 
@@ -101,6 +105,10 @@ public class XmlParser {
         if (reader.isWhiteSpace()) return;
 
         final var ctx = stack.peek();
+        if (ctx == null) {
+            log.error("CTX is null! Bailing out");
+            return;
+        }
         schemaMap.get(ctx.tagName).setHasTextContent(true);
 
         if (ctx.textBuffer.length() < TEXT_PREVIEW_LENGTH + 100) {
@@ -159,7 +167,8 @@ public class XmlParser {
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return "UTF-8";
     }
 

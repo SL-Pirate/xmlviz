@@ -6,3 +6,5 @@
 
 ## Use underscores for unused variables inside lambdas.
 - `Eg: exitItem.setOnAction(e -> Platform.exit());` => `exitItem.setOnAction(_ -> Platform.exit());` 
+
+## Use lombok for ****** sake
