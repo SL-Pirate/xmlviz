@@ -8,66 +8,22 @@ import io.modelcontextprotocol.server.McpServer;
 import io.modelcontextprotocol.server.McpSyncServer;
 import io.modelcontextprotocol.server.transport.StdioServerTransportProvider;
 import io.modelcontextprotocol.spec.McpSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class XmlVizMcpServer {
-
-    private static final Logger log = LoggerFactory.getLogger(XmlVizMcpServer.class);
-
-    private File currentFile;
     private ParseResult currentResult;
 
+    @SuppressWarnings({"UnnecessaryModifier", "unused"})
     public static void main(String[] args) {
         final var server = new XmlVizMcpServer();
         server.start();
     }
-
-    private void start() {
-        final var jsonMapper = new JacksonMcpJsonMapperSupplier().get();
-        final var transportProvider = new StdioServerTransportProvider(jsonMapper);
-
-        final McpSyncServer server = McpServer.sync(transportProvider)
-                .serverInfo("xmlviz", "1.0.0")
-                .capabilities(McpSchema.ServerCapabilities.builder()
-                        .tools(false)
-                        .build())
-                .toolCall(
-                        parseXmlTool(),
-                        (exchange, request) -> handleParseXml(request)
-                )
-                .toolCall(
-                        getSchemaTool(),
-                        (exchange, request) -> handleGetSchema(request)
-                )
-                .toolCall(
-                        searchTool(),
-                        (exchange, request) -> handleSearch(request)
-                )
-                .toolCall(
-                        getElementTool(),
-                        (exchange, request) -> handleGetElement(request)
-                )
-                .toolCall(
-                        getSubtreeTool(),
-                        (exchange, request) -> handleGetSubtree(request)
-                )
-                .build();
-
-        log.info("xmlviz MCP server started");
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            log.info("Shutting down xmlviz MCP server");
-            server.close();
-        }));
-    }
-
-    // --- Tool definitions ---
 
     private static McpSchema.Tool parseXmlTool() {
         return McpSchema.Tool.builder()
@@ -85,6 +41,8 @@ public class XmlVizMcpServer {
                         null, null, null))
                 .build();
     }
+
+    // --- Tool definitions ---
 
     private static McpSchema.Tool getSchemaTool() {
         return McpSchema.Tool.builder()
@@ -152,7 +110,67 @@ public class XmlVizMcpServer {
                 .build();
     }
 
+    private static McpSchema.CallToolResult textResult(String text) {
+        return McpSchema.CallToolResult.builder()
+                .content(List.of(new McpSchema.TextContent(text)))
+                .build();
+    }
+
     // --- Tool handlers ---
+
+    private static McpSchema.CallToolResult errorResult(String message) {
+        return McpSchema.CallToolResult.builder()
+                .content(List.of(new McpSchema.TextContent("Error: " + message)))
+                .isError(true)
+                .build();
+    }
+
+    private static int getIntArg(McpSchema.CallToolRequest request, String key, int defaultValue) {
+        final var value = request.arguments().get(key);
+        if (value instanceof Number n) {
+            return n.intValue();
+        }
+        return defaultValue;
+    }
+
+    private void start() {
+        final var jsonMapper = new JacksonMcpJsonMapperSupplier().get();
+        final var transportProvider = new StdioServerTransportProvider(jsonMapper);
+
+        final McpSyncServer server = McpServer.sync(transportProvider)
+                .serverInfo("xmlviz", "1.0.0")
+                .capabilities(McpSchema.ServerCapabilities.builder()
+                        .tools(false)
+                        .build())
+                .toolCall(
+                        parseXmlTool(),
+                        (_, request) -> handleParseXml(request)
+                )
+                .toolCall(
+                        getSchemaTool(),
+                        (_, request) -> handleGetSchema(request)
+                )
+                .toolCall(
+                        searchTool(),
+                        (_, request) -> handleSearch(request)
+                )
+                .toolCall(
+                        getElementTool(),
+                        (_, request) -> handleGetElement(request)
+                )
+                .toolCall(
+                        getSubtreeTool(),
+                        (_, request) -> handleGetSubtree(request)
+                )
+                .build();
+
+        log.info("xmlviz MCP server started");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("Shutting down xmlviz MCP server");
+            server.close();
+        }));
+    }
 
     private McpSchema.CallToolResult handleParseXml(McpSchema.CallToolRequest request) {
         final var filePath = (String) request.arguments().get("filePath");
@@ -170,13 +188,15 @@ public class XmlVizMcpServer {
         try {
             if (sanitize) {
                 log.info("Sanitizing XML file: {}", filePath);
-                file = new XmlSanitizer().sanitize(file, _ -> {});
+                file = new XmlSanitizer().sanitize(file, _ -> {
+                });
             }
 
             log.info("Parsing XML file: {}", filePath);
             final var parser = new XmlParser();
-            currentResult = parser.parse(file, _ -> {});
-            currentFile = new File(filePath);
+            currentResult = parser.parse(file, _ -> {
+            });
+            File currentFile = new File(filePath);
 
             final var summary = ResultFormatter.formatParseSummary(currentFile, currentResult);
             return textResult(summary);
@@ -203,6 +223,8 @@ public class XmlVizMcpServer {
 
         return textResult(SchemaFormatter.formatAll(currentResult.getSchemaMap()));
     }
+
+    // --- Helpers ---
 
     private McpSchema.CallToolResult handleSearch(McpSchema.CallToolRequest request) {
         if (currentResult == null) {
@@ -237,6 +259,7 @@ public class XmlVizMcpServer {
                 query, page, pageStart, limit, totalMatches, currentResult));
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private McpSchema.CallToolResult handleGetElement(McpSchema.CallToolRequest request) {
         if (currentResult == null) {
             return errorResult("No file parsed yet. Call parse_xml first.");
@@ -254,6 +277,7 @@ public class XmlVizMcpServer {
         return textResult(ResultFormatter.formatElementDetail(entry, currentResult));
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private McpSchema.CallToolResult handleGetSubtree(McpSchema.CallToolRequest request) {
         if (currentResult == null) {
             return errorResult("No file parsed yet. Call parse_xml first.");
@@ -267,32 +291,9 @@ public class XmlVizMcpServer {
                     + ". Valid range: 0-" + (index.size() - 1));
         }
 
-        final var maxNodes = Math.min(Math.max(getIntArg(request, "maxNodes", 1000), 1), 50_000);
+        final var maxNodes = Math.clamp(getIntArg(request, "maxNodes", 1000), 1, 50_000);
         final var entry = index.get(elementId);
         final var xml = currentResult.toXml(entry, maxNodes);
         return textResult(xml);
-    }
-
-    // --- Helpers ---
-
-    private static McpSchema.CallToolResult textResult(String text) {
-        return McpSchema.CallToolResult.builder()
-                .content(List.of(new McpSchema.TextContent(text)))
-                .build();
-    }
-
-    private static McpSchema.CallToolResult errorResult(String message) {
-        return McpSchema.CallToolResult.builder()
-                .content(List.of(new McpSchema.TextContent("Error: " + message)))
-                .isError(true)
-                .build();
-    }
-
-    private static int getIntArg(McpSchema.CallToolRequest request, String key, int defaultValue) {
-        final var value = request.arguments().get(key);
-        if (value instanceof Number n) {
-            return n.intValue();
-        }
-        return defaultValue;
     }
 }

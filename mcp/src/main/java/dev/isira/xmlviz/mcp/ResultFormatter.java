@@ -103,6 +103,7 @@ public final class ResultFormatter {
         return sb.toString();
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private static String formatFileSize(long bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);

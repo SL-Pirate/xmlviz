@@ -255,6 +255,7 @@ public class XmlVizApp extends Application {
         thread.start();
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private String formatFileSize(long bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
